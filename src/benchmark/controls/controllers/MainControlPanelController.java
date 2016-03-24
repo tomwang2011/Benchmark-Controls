@@ -94,6 +94,16 @@ public class MainControlPanelController implements Initializable {
 	@Override
 	public void initialize(URL url, ResourceBundle rb) {
 		_tasks = new ArrayList<>();
+
+		_scriptMap = new HashMap<>();
+
+		_scriptMap.put("Asset", "asset");
+		_scriptMap.put("Blog", "blog");
+		_scriptMap.put("Content", "content");
+		_scriptMap.put("DocumentLibrary", "dl");
+		_scriptMap.put("Login", "login");
+		_scriptMap.put("Messageboard", "mb");
+		_scriptMap.put("Wiki", "wiki");
 	}
 
 	@FXML
@@ -106,6 +116,18 @@ public class MainControlPanelController implements Initializable {
 
 		File benchmarkPathFile = benchmarkPath.toFile();
 
+		if (!warmupRadio.isSelected() && !actualRadio.isSelected() &&
+			!bothRadio.isSelected()) {
+
+			Alert alert = new Alert(AlertType.WARNING);
+			alert.setTitle("Warning Dialog");
+			alert.setHeaderText("Option not selected");
+			alert.setContentText("Please choose the run type");
+
+			alert.showAndWait();
+
+			return;
+		}
 		if (warmupRadio.isSelected()) {
 
 			_tasks.add(
@@ -168,28 +190,16 @@ public class MainControlPanelController implements Initializable {
 
 	@FXML
 	private void deleteTaskBtnAction(ActionEvent event) {
-		String taskList = _getTaskList();
-
 		final Stage dialog = new Stage();
 
 		dialog.initModality(Modality.APPLICATION_MODAL);
 		dialog.initOwner(_primaryStage);
-
-		VBox dialogVbox = new VBox(20);
-
-		dialogVbox.getChildren().add(new Text(taskList));
-
-		Scene dialogScene = new Scene(dialogVbox, 1000, 400);
-
-		dialog.setScene(dialogScene);
-		dialog.show();
 
 		TextInputDialog inputDialog = new TextInputDialog();
 		inputDialog.setTitle("Delete Task");
 		inputDialog.setHeaderText("Delete Task");
 		inputDialog.setContentText("Please enter task number:");
 
-		// Traditional way to get the response value.
 		Optional<String> result = inputDialog.showAndWait();
 		if (result.isPresent()){
 			int deleteTaskNum = Integer.parseInt(result.get());
@@ -227,12 +237,6 @@ public class MainControlPanelController implements Initializable {
 
 	@FXML
 	private void runBtnAction(ActionEvent event) throws IOException {
-		Properties properties = PropertiesUtil.loadProperties(
-			Paths.get("build.properties"));
-
-		Path benchmarkPath = Paths.get(
-			properties.getProperty("benchmark.dir"));
-
 		for (int i = 0; i < _tasks.size(); i++) {
 			AntTask antTask = _tasks.get(i);
 
@@ -273,7 +277,7 @@ public class MainControlPanelController implements Initializable {
 	}
 
 	public void showStage() throws IOException {
-		_setUp();
+		_primaryStage = BenchmarkControls.getPrimaryStage();
 
 		FXMLLoader loader = new FXMLLoader();
 
@@ -340,31 +344,9 @@ public class MainControlPanelController implements Initializable {
 		return sb.toString();
 	}
 
-	private void _setUp() {
-		_primaryStage = BenchmarkControls.getPrimaryStage();
-
-		_scriptMap = new HashMap<>();
-
-		_scriptMap.put("Asset", "asset");
-		_scriptMap.put("Blog", "blog");
-		_scriptMap.put("Content", "content");
-		_scriptMap.put("DocumentLibrary", "dl");
-		_scriptMap.put("Login", "login");
-		_scriptMap.put("Messageboard", "mb");
-		_scriptMap.put("Wiki", "wiki");
-	}
-
 	@FXML
 	private void updateWindowAction() {
 		taskLabel.setText("Tasks: \n" + _getTaskList());
-	}
-
-	private void _setTasks(List<AntTask> tasks) {
-		_tasks = tasks;
-	}
-
-	private List<AntTask> _getTasks() {
-		return _tasks;
 	}
 
 	private List<AntTask> _tasks;
