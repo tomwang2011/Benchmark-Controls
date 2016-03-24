@@ -129,28 +129,18 @@ public class MainControlPanelController implements Initializable {
 			return;
 		}
 		if (warmupRadio.isSelected()) {
-
-			_tasks.add(
-				new AntTask(
-					_createTask(WARMUP, skipBuildPortalCheck.isSelected()),
-					benchmarkPathFile));
-
+			_addTask(
+				skipBuildPortalCheck.isSelected(), benchmarkPathFile, WARMUP);
 		}
 		else if (actualRadio.isSelected()) {
-			_tasks.add(
-				new AntTask(
-					_createTask(ACTUAL, skipBuildPortalCheck.isSelected()),
-					benchmarkPathFile));
+			_addTask(
+				skipBuildPortalCheck.isSelected(), benchmarkPathFile, ACTUAL);
 		}
 		else {
-			_tasks.add(
-				new AntTask(
-					_createTask(WARMUP, skipBuildPortalCheck.isSelected()),
-					benchmarkPathFile));
+			_addTask(
+				skipBuildPortalCheck.isSelected(), benchmarkPathFile, WARMUP);
 
-			_tasks.add(
-				new AntTask(
-					_createTask(ACTUAL, true), benchmarkPathFile));
+			_addTask(true, benchmarkPathFile, ACTUAL);
 		}
 
 		Alert alert = new Alert(AlertType.INFORMATION);
@@ -163,13 +153,8 @@ public class MainControlPanelController implements Initializable {
 
 	@FXML
 	private void changeScriptBtnAction(ActionEvent event) throws IOException {
-		Path pwd = Paths.get(System.getProperty("user.dir"));
-
 		if (scriptList.getValue() != null) {
-			_tasks.add(
-				new AntTask(
-					_createCopyPropertiesTask(scriptList.getValue()),
-					pwd.toFile()));
+			_addScriptChangeTask(scriptList.getValue());
 
 			Alert alert = new Alert(AlertType.INFORMATION);
 			alert.setTitle("Task Added");
@@ -291,6 +276,23 @@ public class MainControlPanelController implements Initializable {
 		_primaryStage.setTitle("Main Control Panel");
 		_primaryStage.setScene(scene);
 		_primaryStage.show();
+	}
+
+	private void _addScriptChangeTask(String script) {
+		Path pwd = Paths.get(System.getProperty("user.dir"));
+
+		_tasks.add(
+			new AntTask(
+				_createCopyPropertiesTask(script),
+				pwd.toFile()));
+	}
+
+	private void _addTask(
+			Boolean buildPortal, File benchmarkPathFile, String runType)
+		throws IOException {
+
+		_tasks.add(
+			new AntTask(_createTask(runType, buildPortal), benchmarkPathFile));
 	}
 
 	private List<String> _createCopyPropertiesTask(String testCase) {
